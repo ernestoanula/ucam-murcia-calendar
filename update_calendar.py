@@ -43,7 +43,6 @@ def find_google_calendar_links(html):
         .replace("&#x26;", "&")
         for link in links
     ]
-``
 
 
 def parse_google_event(link):
