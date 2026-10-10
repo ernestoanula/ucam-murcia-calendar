@@ -29,18 +29,21 @@ def escape_ical(text):
 
 
 def find_google_calendar_links(html):
-    # Busca enlaces de Google Calendar presentes en la página.
+    # Busca las URLs de Google Calendar publicadas por UCAM.
     links = re.findall(
-        r'href=[^"\']*calendar\.google\.com/calendar/render[^"\']*["\']',
+        r'https://calendar\.google\.com/calendar/render\?[^"\'<> ]+',
         html,
         flags=re.IGNORECASE,
     )
 
-    # Convierte entidades HTML habituales.
+    # Las URLs dentro del HTML contienen &amp; en lugar de &.
     return [
-        link.replace("&amp;", "&").replace("&#38;", "&")
+        link.replace("&amp;", "&")
+        .replace("&#38;", "&")
+        .replace("&#x26;", "&")
         for link in links
     ]
+``
 
 
 def parse_google_event(link):
