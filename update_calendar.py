@@ -93,20 +93,22 @@ def parse_google_event(link):
         "details": details,
     }
 
-
 def stable_uid(event):
-    # El UID no incluye la hora para que un cambio de horario
-    # actualice el mismo encuentro en lugar de crear un duplicado.
-    teams = sorted(
-        part.strip().lower()
-        for part in event["title"].split(" - ")
+    # Cada enfrentamiento y fecha tiene un UID propio.
+    # Un cambio de hora en el mismo día mantiene el UID,
+    # evitando duplicados al actualizar horarios.
+
+    base = (
+        event["title"].strip().lower()
+        + "|"
+        + event["start"].strftime("%Y-%m-%d")
     )
 
-    base = "|".join(teams)
-    digest = hashlib.sha256(base.encode("utf-8")).hexdigest()[:24]
+    digest = hashlib.sha256(
+        base.encode("utf-8")
+    ).hexdigest()[:24]
 
     return f"{digest}@ucam-murcia-calendar"
-
 
 def create_ics(events):
     now = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
