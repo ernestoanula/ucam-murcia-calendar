@@ -1,7 +1,8 @@
 import re
 import hashlib
 from datetime import datetime, timedelta, timezone
-from urllib.parse import urljoin, urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs
+from html.parser import HTMLParser
 from urllib.request import Request, urlopen
 
 URL = "https://www.ucamdeportes.com/ucamcb/proximos-partidos"
@@ -27,23 +28,29 @@ def escape_ical(text):
         .replace("\n", "\\n")
     )
 
+class CalendarLinkParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.links = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag.lower() != "a":
+            return
+
+        href = dict(attrs).get("href", "")
+
+        if (
+            "calendar.google.com/calendar/render" in href
+            and "action=TEMPLATE" in href
+        ):
+            self.links.append(href)
+
 
 def find_google_calendar_links(html):
-    # Busca las URLs de Google Calendar publicadas por UCAM.
-    links = re.findall(
-        r'https://calendar\.google\.com/calendar/render\?[^"\'<> ]+',
-        html,
-        flags=re.IGNORECASE,
-    )
+    parser = CalendarLinkParser()
+    parser.feed(html)
 
-    # Las URLs dentro del HTML contienen &amp; en lugar de &.
-    return [
-        link.replace("&amp;", "&")
-        .replace("&#38;", "&")
-        .replace("&#x26;", "&")
-        for link in links
-    ]
-
+    return parser.links
 
 def parse_google_event(link):
     parsed = urlparse(link)
