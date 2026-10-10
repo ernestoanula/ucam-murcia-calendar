@@ -37,9 +37,9 @@ class CalendarLinkParser(HTMLParser):
         if tag.lower() != "a":
             return
 
-        href = dict(attrs).get("href", "")
+        href = dict(attrs).get("href")
 
-        if (
+        if href and (
             "calendar.google.com/calendar/render" in href
             and "action=TEMPLATE" in href
         ):
